@@ -6,11 +6,11 @@
       class="hamburger-container"
       @toggleClick="toggleSideBar"
     />
-    <breadcrumb
+    <!-- <breadcrumb
       v-if="!settingsStore.topNav"
       id="breadcrumb-container"
       class="breadcrumb-container"
-    />
+    /> -->
     <top-nav
       v-if="settingsStore.topNav"
       id="topmenu-container"
@@ -19,7 +19,7 @@
 
     <div class="right-menu">
       <template v-if="appStore.device !== 'mobile'">
-        <header-search id="header-search" class="right-menu-item" />
+        <!-- <header-search id="header-search" class="right-menu-item" /> -->
 
         <!-- <el-tooltip content="源码地址" effect="dark" placement="bottom">
           <ruo-yi-git id="ruoyi-git" class="right-menu-item hover-effect" />
@@ -29,7 +29,7 @@
           <ruo-yi-doc id="ruoyi-doc" class="right-menu-item hover-effect" />
         </el-tooltip> -->
 
-        <screenfull id="screenfull" class="right-menu-item hover-effect" />
+        <!-- <screenfull id="screenfull" class="right-menu-item hover-effect" /> -->
 
         <!-- <el-tooltip content="主题模式" effect="dark" placement="bottom">
           <div
@@ -41,9 +41,9 @@
           </div>
         </el-tooltip> -->
 
-        <el-tooltip content="布局大小" effect="dark" placement="bottom">
+        <!-- <el-tooltip content="布局大小" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
-        </el-tooltip>
+        </el-tooltip> -->
       </template>
 
       <el-dropdown
@@ -66,13 +66,13 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <div
+      <!-- <div
         class="right-menu-item hover-effect setting"
         @click="setLayout"
         v-if="settingsStore.showSettings"
       >
         <svg-icon icon-class="more-up" />
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -142,7 +142,9 @@ function toggleTheme() {
   overflow: hidden;
   position: relative;
   background: var(--navbar-bg);
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  /* box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08); */
+  padding: 0 40px 0 0;
+  box-sizing: border-box;
 
   .hamburger-container {
     line-height: 46px;
@@ -231,9 +233,10 @@ function toggleTheme() {
         .user-nickname {
           position: relative;
           left: 5px;
-          bottom: 10px;
+          bottom: 8px;
           font-size: 14px;
           font-weight: bold;
+          color: #000;
         }
 
         i {

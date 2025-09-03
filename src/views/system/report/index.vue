@@ -1,32 +1,11 @@
 <template>
   <div class="app-container">
+    <div class="top-title">设备策略</div>
     <el-row :gutter="20">
       <splitpanes
         :horizontal="appStore.device === 'mobile'"
         class="default-theme"
       >
-        <!--部门数据-->
-        <!-- <pane size="16">
-          <el-col>
-            <div class="head-container">
-              <el-input v-model="deptName" placeholder="请输入部门名称" clearable prefix-icon="Search" style="margin-bottom: 20px" />
-            </div>
-            <div class="head-container">
-              <el-tree
-                :data="deptOptions"
-                :props="{ label: 'label', children: 'children' }"
-                :expand-on-click-node="false"
-                :filter-node-method="filterNode"
-                ref="deptTreeRef"
-                node-key="id"
-                highlight-current
-                default-expand-all
-                @node-click="handleNodeClick"
-              />
-            </div>
-          </el-col>
-        </pane> -->
-        <!--用户数据-->
         <pane size="84">
           <el-col>
             <el-form
@@ -89,14 +68,9 @@
 
             <el-row :gutter="10" class="mb8">
               <el-col :span="1.5">
-                <el-button
-                  type="primary"
-                  plain
-                  icon="Plus"
-                  @click="handleAdd"
-                  v-hasPermi="['system:user:add']"
-                  >新增</el-button
-                >
+                <el-button type="primary" plain icon="Plus" @click="handleAdd">
+                  添加Android策略
+                </el-button>
               </el-col>
               <el-col :span="1.5">
                 <el-button
@@ -120,26 +94,6 @@
                   >删除</el-button
                 >
               </el-col>
-              <el-col :span="1.5">
-                <el-button
-                  type="info"
-                  plain
-                  icon="Upload"
-                  @click="handleImport"
-                  v-hasPermi="['system:user:import']"
-                  >导入</el-button
-                >
-              </el-col>
-              <el-col :span="1.5">
-                <el-button
-                  type="warning"
-                  plain
-                  icon="Download"
-                  @click="handleExport"
-                  v-hasPermi="['system:user:export']"
-                  >导出</el-button
-                >
-              </el-col>
               <right-toolbar
                 v-model:showSearch="showSearch"
                 @queryTable="getList"
@@ -152,65 +106,48 @@
               :data="userList"
               @selection-change="handleSelectionChange"
               border
-              :show-overflow-tooltip="true"
+              :row-key="(row) => row.userId"
+              height="560"
             >
-              <el-table-column type="selection" width="50" align="center" />
               <el-table-column
-                label="编号"
+                type="selection"
+                width="50"
                 align="center"
-                key="userId"
-                prop="userId"
-                v-if="columns[0].visible"
+                :reserve-selection="true"
               />
-              <el-table-column
-                label="教师手机号"
-                align="center"
-                key="userName"
-                prop="userName"
-                v-if="columns[1].visible"
-                :show-overflow-tooltip="true"
-              />
-              <el-table-column
-                label="教师姓名"
-                align="center"
-                key="nickName"
-                prop="nickName"
-                v-if="columns[2].visible"
-                :show-overflow-tooltip="true"
-              />
-              <el-table-column
-                label="部门"
-                align="center"
-                key="deptName"
-                prop="dept.deptName"
-                v-if="columns[3].visible"
-                :show-overflow-tooltip="true"
-              />
-              <!-- <el-table-column
-                label="手机号码"
-                align="center"
-                key="phonenumber"
-                prop="phonenumber"
-                v-if="columns[4].visible"
-              /> -->
-              <el-table-column
-                label="状态"
-                align="center"
-                key="status"
-                v-if="columns[5].visible"
-              >
-                <template #default="scope">
-                  <el-switch
-                    v-model="scope.row.status"
-                    active-value="0"
-                    inactive-value="1"
-                    inline-prompt
-                    active-text="启用"
-                    inactive-text="禁用"
-                    @change="handleStatusChange(scope.row)"
-                  ></el-switch>
-                </template>
-              </el-table-column>
+
+              <template v-for="item in columns" :key="item.key">
+                <el-table-column
+                  v-if="item.visible"
+                  :label="item.label"
+                  :width="item.width"
+                  :prop="item.prop"
+                  align="center"
+                  :show-overflow-tooltip="
+                    item.type !== 'count' && item.type !== 'status'
+                  "
+                >
+                  <template #default="scope">
+                    <template v-if="item.type === 'count'">
+                      <div class="count">02/100</div>
+                    </template>
+                    <template v-else-if="item.type === 'status'">
+                      <el-switch
+                        v-model="scope.row.status"
+                        active-value="0"
+                        inactive-value="1"
+                        inline-prompt
+                        active-text="启用"
+                        inactive-text="禁用"
+                      />
+                    </template>
+                    <template v-else>
+                      {{ scope.row[item.prop] }}
+                    </template>
+                  </template>
+                </el-table-column>
+              </template>
+
               <el-table-column
                 label="操作"
                 align="center"
@@ -224,6 +161,7 @@
                 </template>
               </el-table-column>
             </el-table>
+
             <pagination
               v-show="total > 0"
               :total="total"
@@ -540,13 +478,30 @@ const upload = reactive({
 });
 // 列显隐信息
 const columns = ref([
-  { key: 0, label: `用户编号`, visible: true },
-  { key: 1, label: `教师手机号`, visible: true },
-  { key: 2, label: `教师姓名`, visible: true },
-  { key: 3, label: `部门`, visible: false },
-  { key: 4, label: `手机号码`, visible: true },
-  { key: 5, label: `状态`, visible: true },
-  { key: 6, label: `创建时间`, visible: true },
+  { key: 0, prop: "userName", label: `策略名称`, visible: true },
+  {
+    key: 1,
+    prop: "userName",
+    label: `状态`,
+    visible: true,
+    type: "status",
+  },
+  { key: 2, prop: "userName", label: `管理员`, visible: true },
+  { key: 3, prop: "userName", label: `平台`, visible: false },
+  { key: 4, prop: "userName", label: `描述`, visible: true },
+  {
+    key: 5,
+    prop: "userName",
+    label: `已应用/设备总数`,
+    visible: true,
+    type: "count",
+  },
+  {
+    key: 6,
+    prop: "userName",
+    label: `更新时间`,
+    visible: true,
+  },
 ]);
 
 const data = reactive({
@@ -903,3 +858,9 @@ onMounted(() => {
   });
 });
 </script>
+
+<style lang="scss" scoped>
+.count {
+  color: #f9be3b;
+}
+</style>

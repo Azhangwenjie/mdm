@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <div class="top-title">设备列表</div>
     <el-row :gutter="20">
       <splitpanes
         :horizontal="appStore.device === 'mobile'"

@@ -1,6 +1,6 @@
 <template>
   <el-dialog v-model="dialogVisible" :title="dialogTitle" width="45%">
-    <el-form :model="formData" ref="formRef" :rules="rules">
+    <el-form :model="formData" ref="formRef" :rules="rules" label-width="100PX">
       <el-form-item label="策略名称" prop="strategy">
         <el-input
           v-model="formData.strategy"
@@ -14,6 +14,10 @@
           v-model="formData.description"
           placeholder="请输入策略描述"
           type="textarea"
+          :autosize="{
+            minRows: 3,
+            maxRows: 6,
+          }"
           maxlength="300"
           show-word-limit
         ></el-input>
@@ -43,16 +47,18 @@ const formData = reactive({
 
 const rules = reactive({
   strategy: [{ required: true, message: "策略名称不能为空", trigger: "blur" }],
-  description: [
-    { required: true, message: "策略描述不能为空", trigger: "blur" },
-  ],
+  // description: [
+  //   { required: true, message: "策略描述不能为空", trigger: "blur" },
+  // ],
 });
 
 const dialogVisible = ref(false);
-const dialogTitle = ref("a");
+const dialogTitle = ref("");
 const open = (type, row) => {
   dialogTitle.value = type;
   dialogVisible.value = true;
+  formData.strategy = row.strageName || "";
+  formData.description = row.strageDescription || "";
 };
 
 const formRef = ref(null);
@@ -61,7 +67,13 @@ const btnClick = (type) => {
     case "确定":
       formRef.value?.validate((valid) => {
         if (valid) {
-          emits("refresh");
+          const payload = {
+            strategy: formData.strategy,
+            description: formData.description,
+          };
+          showToast("success", "修改成功");
+          emits("refresh", payload);
+          reset();
         }
       });
 
@@ -77,7 +89,7 @@ const btnClick = (type) => {
 const showToast = useThrottleFn(
   (
     type = "success",
-    content = "",
+    message = "",
     extraInfo = {
       plain: false,
     }

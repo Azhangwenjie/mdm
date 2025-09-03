@@ -16,7 +16,7 @@
     >
       <div :class="{ 'fixed-header': fixedHeader }">
         <navbar @setLayout="setLayout" />
-        <tags-view v-if="needTagsView" />
+        <!-- <tags-view v-if="needTagsView" /> -->
       </div>
       <app-main />
       <settings ref="settingRef" />
@@ -84,8 +84,12 @@ function setLayout() {
 .app-wrapper {
   @include mix.clearfix;
   position: relative;
-  height: 100%;
+  /* height: 100%; */
   width: 100%;
+  background-image: url("@/assets/images/home_bg.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center/top;
 
   &.mobile.openSidebar {
     position: fixed;

@@ -51,13 +51,6 @@ const handleNext = () => {
       // 应用配置 builtConfigs.value
       console.log("1", builtConfigs.value);
 
-      const allHasPackageName = builtConfigs.value.every(
-        (item) => item.packageName
-      );
-      if (!allHasPackageName) {
-        showToast("warning", "请检查应用配置是否有包名未填写");
-      }
-
       // 限制功能 strategyConfig
       console.log("1", strategyConfig);
 
@@ -66,17 +59,24 @@ const handleNext = () => {
 
       break;
     case 2:
-      console.log("2");
       break;
     default:
       break;
+  }
+
+  const allHasPackageName = builtConfigs.value.every(
+    (item) => item.packageNames
+  );
+  if (!allHasPackageName) {
+    showToast("warning", "请检查应用配置是否有包名未填写");
+    return;
   }
 
   currentStep.value++;
 };
 
 const strageConfig = reactive({
-  currentTab: "configure",
+  currentTab: "app",
 });
 const pushRange = reactive({
   currentTab: "organizational",
@@ -84,18 +84,23 @@ const pushRange = reactive({
     {
       id: 1,
       label: "Level one 1",
+      org: "组织",
       children: [
         {
           id: 4,
           label: "Level two 1-1",
+          org: "组织",
+
           children: [
             {
               id: 9,
               label: "Level three 1-1-1",
+              org: "组织",
             },
             {
               id: 10,
               label: "Level three 1-1-2",
+              org: "组织",
             },
           ],
         },
@@ -104,28 +109,36 @@ const pushRange = reactive({
     {
       id: 2,
       label: "Level one 2",
+      org: "组织",
+
       children: [
         {
           id: 5,
           label: "Level two 2-1",
+          org: "组织",
         },
         {
           id: 6,
           label: "Level two 2-2",
+          org: "组织",
         },
       ],
     },
     {
       id: 3,
       label: "Level one 3",
+      org: "组织",
+
       children: [
         {
           id: 7,
           label: "Level two 3-1",
+          org: "组织",
         },
         {
           id: 8,
           label: "Level two 3-2",
+          org: "组织",
         },
       ],
     },
@@ -175,6 +188,19 @@ const defaultProps = {
 watch(filterText, (val) => {
   treeRef.value!.filter(val);
 });
+watch(
+  currentStep,
+  async (val) => {
+    if (val === 2) {
+      await nextTick();
+      const checkedKeys = (pushRange.selectedOrgs || []).map((o: any) => o.id);
+      if (treeRef.value && Array.isArray(checkedKeys)) {
+        treeRef.value.setCheckedKeys(checkedKeys, false);
+      }
+    }
+  },
+  { immediate: false }
+);
 const handleCheck = () => {
   pushRange.selectedOrgs = treeRef.value.getCheckedNodes();
 };
@@ -205,6 +231,8 @@ const getAssetsImg = (path) => {
 };
 
 const strategyConfig = reactive({
+  strageName: "策略名称",
+  strageDescription: "",
   strategyList: [
     {
       id: 1,
@@ -218,7 +246,7 @@ const strategyConfig = reactive({
           label: "禁止使用蓝牙",
           value: "disable_wifi",
           selected: false,
-          description: "仅针对华为或高权限的设备生效",
+          description: "",
         },
         {
           id: 12,
@@ -287,13 +315,30 @@ const strategyConfig = reactive({
       value: 1,
       enable: false,
     },
-    {
-      label: "高级限制",
-      value: 2,
-      enable: false,
-    },
+    // {
+    //   label: "高级限制",
+    //   value: 2,
+    //   enable: false,
+    // },
   ],
 });
+
+const selectedStrategies = ref([
+  {
+    strageName: strategyConfig.strageName,
+    strageDescription: strategyConfig.strageDescription,
+  },
+]);
+const handleRefresh = (data) => {
+  strategyConfig.strageName = data.strategy;
+  strategyConfig.strageDescription = data.description;
+  selectedStrategies.value = [
+    {
+      strageName: data.strategy,
+      strageDescription: data.description,
+    },
+  ];
+};
 
 function createTabBinding(getTabs, getActive) {
   const item = computed(() => getTabs().find((t) => t.value === getActive())!);
@@ -391,7 +436,7 @@ const currentConfig = computed(
 );
 
 const configureConfig = reactive({
-  currentTab: 4,
+  currentTab: 1,
   tabs: [
     {
       label: "壁纸",
@@ -446,7 +491,10 @@ const { enabled: currentTabEnabled } = createTabBinding(
 
 const editDialogRef = ref();
 const handleEdit = () => {
-  editDialogRef.value.open("编辑");
+  editDialogRef.value.open("编辑", {
+    strageName: strategyConfig.strageName,
+    strageDescription: strategyConfig.strageDescription,
+  });
 };
 </script>
 
@@ -466,7 +514,7 @@ const handleEdit = () => {
     <div class="strategy-container">
       <div class="left-panel">
         <div class="strage-name_box">
-          <div class="strage-name">策略名称</div>
+          <div class="strage-name">{{ strategyConfig.strageName }}</div>
           <div class="edit" @click="handleEdit">
             <el-icon> <Edit /></el-icon>
             <span>编辑</span>
@@ -652,6 +700,7 @@ const handleEdit = () => {
                         <span>{{ strategy.name }}</span>
                       </div>
                       <el-switch
+                        :disabled="!currentLimitTabEnabled"
                         v-model="strategy.enabled"
                         style="--el-switch-on-color: #409eff"
                       />
@@ -923,26 +972,23 @@ const handleEdit = () => {
         </template>
         <template v-if="currentStep === 3">
           <el-card header="已选择推送设备策略">
-            <el-table border>
-              <el-table-column label="序号"></el-table-column>
-              <el-table-column label="策略名称"></el-table-column>
-              <el-table-column label="管理员"></el-table-column>
-              <el-table-column label="平台"></el-table-column>
-              <el-table-column label="策略描述"></el-table-column>
+            <el-table :data="selectedStrategies" border>
+              <el-table-column prop="strageName" label="策略名称" />
+              <el-table-column prop="strageDescription" label="策略描述" />
             </el-table>
           </el-card>
           <el-card header="已选择推送范围" style="margin-top: 20px">
-            <el-table border>
-              <el-table-column label="序号"></el-table-column>
-              <el-table-column label="已选择推送范围"></el-table-column>
-              <el-table-column label="推送范围类型"></el-table-column>
+            <el-table :data="pushRange.selectedOrgs" border>
+              <el-table-column type="index" label="序号" width="80" />
+              <el-table-column prop="label" label="已选择推送范围" />
+              <el-table-column prop="org" label="推送范围类型" />
             </el-table>
           </el-card>
         </template>
       </div>
     </div>
 
-    <editDialog ref="editDialogRef" />
+    <editDialog ref="editDialogRef" @refresh="handleRefresh" />
   </div>
 </template>
 

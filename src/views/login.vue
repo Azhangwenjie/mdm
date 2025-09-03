@@ -6,10 +6,6 @@
       :rules="loginRules"
       class="login-form"
     >
-      <div class="banner-info">
-        <img class="logo" src="@/assets/logo/logo.png" alt="Logo" />
-        <img class="title-pic" src="@/assets/images/title.png" alt="title" />
-      </div>
       <h3 class="title">欢迎登录</h3>
       <el-form-item prop="username">
         <el-input

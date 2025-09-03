@@ -21,57 +21,75 @@
         />
       </el-menu>
     </el-scrollbar>
+    <div class="icon"></div>
   </div>
 </template>
 
 <script setup>
-import Logo from './Logo'
-import SidebarItem from './SidebarItem'
-import variables from '@/assets/styles/variables.module.scss'
-import useAppStore from '@/store/modules/app'
-import useSettingsStore from '@/store/modules/settings'
-import usePermissionStore from '@/store/modules/permission'
+import Logo from "./Logo";
+import SidebarItem from "./SidebarItem";
+import variables from "@/assets/styles/variables.module.scss";
+import useAppStore from "@/store/modules/app";
+import useSettingsStore from "@/store/modules/settings";
+import usePermissionStore from "@/store/modules/permission";
 
-const route = useRoute()
-const appStore = useAppStore()
-const settingsStore = useSettingsStore()
-const permissionStore = usePermissionStore()
+const route = useRoute();
+const appStore = useAppStore();
+const settingsStore = useSettingsStore();
+const permissionStore = usePermissionStore();
 
-const sidebarRouters = computed(() => permissionStore.sidebarRouters)
-const showLogo = computed(() => settingsStore.sidebarLogo)
-const sideTheme = computed(() => settingsStore.sideTheme)
-const theme = computed(() => settingsStore.theme)
-const isCollapse = computed(() => !appStore.sidebar.opened)
+const sidebarRouters = computed(() => permissionStore.sidebarRouters);
+const showLogo = computed(() => settingsStore.sidebarLogo);
+const sideTheme = computed(() => settingsStore.sideTheme);
+const theme = computed(() => settingsStore.theme);
+const isCollapse = computed(() => !appStore.sidebar.opened);
 
 // 获取菜单背景色
 const getMenuBackground = computed(() => {
   if (settingsStore.isDark) {
-    return 'var(--sidebar-bg)'
+    return "var(--sidebar-bg)";
   }
-  return sideTheme.value === 'theme-dark' ? variables.menuBg : variables.menuLightBg
-})
+  return sideTheme.value === "theme-dark"
+    ? variables.menuBg
+    : variables.menuLightBg;
+});
 
 // 获取菜单文字颜色
 const getMenuTextColor = computed(() => {
   if (settingsStore.isDark) {
-    return 'var(--sidebar-text)'
+    return "var(--sidebar-text)";
   }
-  return sideTheme.value === 'theme-dark' ? variables.menuText : variables.menuLightText
-})
+  return sideTheme.value === "theme-dark"
+    ? variables.menuText
+    : variables.menuLightText;
+});
 
 const activeMenu = computed(() => {
-  const { meta, path } = route
+  const { meta, path } = route;
   if (meta.activeMenu) {
-    return meta.activeMenu
+    return meta.activeMenu;
   }
-  return path
-})
+  return path;
+});
 </script>
 
 <style lang="scss" scoped>
 .sidebar-container {
   background-color: v-bind(getMenuBackground);
-  
+  position: relative;
+  .icon {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    width: 100%;
+    height: 327px;
+    background-image: url("@/assets/images/sliderBar.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+  }
+
   .scrollbar-wrapper {
     background-color: v-bind(getMenuBackground);
   }
@@ -80,8 +98,9 @@ const activeMenu = computed(() => {
     border: none;
     height: 100%;
     width: 100% !important;
-    
-    .el-menu-item, .el-sub-menu__title {
+
+    .el-menu-item,
+    .el-sub-menu__title {
       &:hover {
         background-color: var(--menu-hover, rgba(0, 0, 0, 0.06)) !important;
       }
@@ -89,7 +108,7 @@ const activeMenu = computed(() => {
 
     .el-menu-item {
       color: v-bind(getMenuTextColor);
-      
+
       &.is-active {
         color: var(--menu-active-text, #409eff);
         background-color: var(--menu-hover, rgba(0, 0, 0, 0.06)) !important;
