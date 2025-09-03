@@ -3,6 +3,7 @@ import { useThrottleFn } from "@vueuse/core";
 import { ElMessage, ElMessageBox } from "element-plus";
 // import editDialog from "./components/editDialog.vue";
 import editDialog from "./system/report/components/editDialog.vue";
+import zipUpload from "./system/report/components/zipUpload.vue";
 
 const showToast = useThrottleFn((type = "success", message) => {
   ElMessage({
@@ -75,7 +76,7 @@ const handleNext = () => {
 };
 
 const strageConfig = reactive({
-  currentTab: "app",
+  currentTab: "configure",
 });
 const pushRange = reactive({
   currentTab: "organizational",
@@ -294,11 +295,7 @@ const strategyConfig = reactive({
   ],
 });
 
-// 统一封装：基于 tabs 与 active 值的启用开关 v-model 绑定
-function createTabBinding<T extends { value: number; enable: boolean }>(
-  getTabs: () => T[],
-  getActive: () => number
-) {
+function createTabBinding(getTabs, getActive) {
   const item = computed(() => getTabs().find((t) => t.value === getActive())!);
   const enabled = computed({
     get: () => (item?.value ? item.value.enable : false),
@@ -309,7 +306,6 @@ function createTabBinding<T extends { value: number; enable: boolean }>(
   return { item, enabled };
 }
 
-// 限制功能：开关绑定
 const { enabled: currentLimitTabEnabled } = createTabBinding(
   () => strategyConfig.tabs,
   () => strategyConfig.currentTab
@@ -336,7 +332,6 @@ const builtConfigs = ref([
 const currentConfigId = ref(1);
 
 const handleAddConfig = () => {
-  // 校验：新增下一个之前，前一个的包名必须填写
   if (builtConfigs.value.length) {
     const lastConfig = builtConfigs.value[builtConfigs.value.length - 1];
     const pkg = (lastConfig.packageNames || "").trim();
@@ -396,7 +391,7 @@ const currentConfig = computed(
 );
 
 const configureConfig = reactive({
-  currentTab: 1,
+  currentTab: 4,
   tabs: [
     {
       label: "壁纸",
@@ -419,10 +414,24 @@ const configureConfig = reactive({
       enable: false,
     },
   ],
-  phoneDefaultPic: "default.png",
-  // phoneDefaultPic: "test.jpeg",
+  // phoneDefaultPic: "default.png", //test.jpeg
   phonePicLockScreen: "default.png",
   phonePicMainScreen: "default.png",
+  selectedInternetConfig: "voice-centric",
+  internetCobnfigure: [
+    {
+      label: "voice-centric",
+      value: "voice-centric",
+      desc: "注册为语音中心",
+    },
+    {
+      label: "data-centric",
+      value: "data-centric",
+      desc: "注册为数据中心",
+    },
+  ],
+  bootAnimationZip: "",
+  bootVoiceZip: "",
 });
 
 const handleTogglePic = () => {
@@ -430,7 +439,6 @@ const handleTogglePic = () => {
   configureConfig.phonePicMainScreen = "test.jpeg";
 };
 
-// 配置项：开关绑定
 const { enabled: currentTabEnabled } = createTabBinding(
   () => configureConfig.tabs,
   () => configureConfig.currentTab
@@ -766,6 +774,67 @@ const handleEdit = () => {
                   </div>
                 </div>
               </template>
+
+              <template v-else-if="configureConfig.currentTab === 2">
+                <el-radio-group
+                  v-model="configureConfig.selectedInternetConfig"
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                  "
+                >
+                  <template
+                    v-for="item in configureConfig.internetCobnfigure"
+                    :key="item.label"
+                  >
+                    <el-radio
+                      :value="item.value"
+                      :disabled="!currentTabEnabled"
+                    >
+                      <div style="display: flex; align-items: center">
+                        <div>
+                          {{ item.label }}
+                        </div>
+                        <div style="color: #409eff; margin-left: 20px">
+                          {{ item.desc }}
+                        </div>
+                      </div>
+                    </el-radio>
+                  </template>
+                </el-radio-group>
+              </template>
+
+              <template v-if="configureConfig.currentTab === 4">
+                <div class="file">
+                  <el-icon color="#409eff"><FolderOpened /></el-icon>
+                  <a
+                    class="boot-file"
+                    href="https://www.iconfont.cn/search/index?searchType=icon&q=%E5%BC%80%E6%9C%BA%E6%96%87%E4%BB%B6&page=1&fromCollection=-1"
+                    target="_blank"
+                  >
+                    开机动画指导文件
+                  </a>
+                </div>
+                <div class="upload-section">
+                  <h3>开机动画上传</h3>
+                  <zipUpload
+                    required-file-name="bootanimation.zip"
+                    :max-size="20"
+                    v-model="configureConfig.bootAnimationZip"
+                  />
+                </div>
+
+                <div class="upload-section">
+                  <h3>开机铃声上传</h3>
+                  <zipUpload
+                    required-file-name="bootSound.ogg"
+                    :max-size="20"
+                    v-model="configureConfig.bootVoiceZip"
+                  />
+                </div>
+              </template>
+
               <template v-else>
                 <el-empty></el-empty>
               </template>
