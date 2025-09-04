@@ -46,6 +46,8 @@ function addIframe() {
   width: 100%;
   position: relative;
   overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .app-main:has(.copyright) {

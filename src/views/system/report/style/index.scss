@@ -1,8 +1,10 @@
 $primaryBgColor: #409eff;
 
 .detail-box {
-  height: calc(100vh - 84px);
+  // height: calc(100vh - 84px);
   overflow: auto;
+  background-color: #fff;
+  border-radius: 10px;
 
   .top-banner {
     height: 60px;
@@ -81,6 +83,7 @@ $primaryBgColor: #409eff;
     .right-panel {
       flex: 1;
       overflow: hidden;
+      min-height: 500px;
 
       .tips {
         background-color: #fcf3e8;
@@ -183,6 +186,11 @@ $primaryBgColor: #409eff;
 
           .upload {
             margin-top: 20px;
+            display: flex;
+            align-items: center;
+            > div {
+              margin-right: 10px;
+            }
           }
         }
       }

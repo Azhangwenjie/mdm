@@ -5,12 +5,21 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import editDialog from "./system/report/components/editDialog.vue";
 import zipUpload from "./system/report/components/zipUpload.vue";
 
+import dayjs from "dayjs";
+import "dayjs/locale/zh-cn";
+import ImgUpload from "./system/report/components/imgUpload.vue";
+dayjs.locale("zh-cn");
+
+import { RefreshRight } from "@element-plus/icons-vue";
+
 const showToast = useThrottleFn((type = "success", message) => {
   ElMessage({
     type,
     message,
   });
 }, 2000);
+
+const dayText = dayjs().format("M月D日 dddd");
 
 const strategySteps = ref([
   {
@@ -799,15 +808,29 @@ const handleEdit = () => {
                     >
                       <div class="time">
                         <div class="now">12:00</div>
-                        <div class="day">8月12日 星期一</div>
+                        <div class="day">{{ dayText }}</div>
                       </div>
                     </div>
-                    <el-button
-                      class="upload"
-                      type="primary"
-                      @click="handleTogglePic"
-                      >切换</el-button
-                    >
+
+                    <div class="upload">
+                      <ImgUpload
+                        :disabled="!currentTabEnabled"
+                        button-text="上传背景图"
+                        :accept="['jpg', 'jpeg', 'png']"
+                        :max-size="10"
+                        :width="1242"
+                        :height="2688"
+                        upload-action="/api/upload"
+                        @upload-success="handleUploadSuccess"
+                      />
+                      <el-button
+                        :disabled="!currentTabEnabled"
+                        type="primary"
+                        :icon="RefreshRight"
+                        @click="handleTogglePic"
+                        >重置
+                      </el-button>
+                    </div>
                   </div>
                   <div class="pic">
                     <div class="tag">主屏幕</div>
@@ -819,7 +842,26 @@ const handleEdit = () => {
                         )})`,
                       }"
                     ></div>
-                    <el-button class="upload" type="primary">切换</el-button>
+                    <div class="upload">
+                      <ImgUpload
+                        :disabled="!currentTabEnabled"
+                        button-text="上传背景图"
+                        :accept="['jpg', 'jpeg', 'png']"
+                        :max-size="10"
+                        :width="1242"
+                        :height="2688"
+                        upload-action="/api/upload"
+                        @upload-success="handleUploadSuccess"
+                      />
+                      <el-button
+                        :disabled="!currentTabEnabled"
+                        type="primary"
+                        :icon="RefreshRight"
+                        @click="handleTogglePic"
+                      >
+                        重置
+                      </el-button>
+                    </div>
                   </div>
                 </div>
               </template>
@@ -854,7 +896,7 @@ const handleEdit = () => {
                 </el-radio-group>
               </template>
 
-              <template v-if="configureConfig.currentTab === 4">
+              <template v-else-if="configureConfig.currentTab === 4">
                 <div class="file">
                   <el-icon color="#409eff"><FolderOpened /></el-icon>
                   <a
@@ -868,6 +910,16 @@ const handleEdit = () => {
                 <div class="upload-section">
                   <h3>开机动画上传</h3>
                   <zipUpload
+                    :disabled="!currentTabEnabled"
+                    required-file-name="bootanimation.zip"
+                    :max-size="20"
+                    v-model="configureConfig.bootAnimationZip"
+                  />
+                </div>
+                <div class="upload-section">
+                  <h3>关机动画上传</h3>
+                  <zipUpload
+                    :disabled="!currentTabEnabled"
                     required-file-name="bootanimation.zip"
                     :max-size="20"
                     v-model="configureConfig.bootAnimationZip"
@@ -877,6 +929,7 @@ const handleEdit = () => {
                 <div class="upload-section">
                   <h3>开机铃声上传</h3>
                   <zipUpload
+                    :disabled="!currentTabEnabled"
                     required-file-name="bootSound.ogg"
                     :max-size="20"
                     v-model="configureConfig.bootVoiceZip"
